@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="states_array">
+        <item>Punjab</item>
+        <item>Harayana</item>
+        <item>Himachal Pradesh</item>
+        <item>Delhi</item>
+        <item>Jammu and Kashmir</item>
+        <item>Rajasthan</item>
+    </string-array>
+</resources>
