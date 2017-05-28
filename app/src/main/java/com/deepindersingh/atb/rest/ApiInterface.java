@@ -17,13 +17,27 @@ import retrofit2.http.Query;
 
 public interface ApiInterface {
     @POST("api/requests")
-    Call<Requests> getRequestList(@Query("token") String token);
-
-    @GET("movie/{id}")
-    Call<Requests> getMovieDetails(@Path("id") int id, @Query("api_key") String apiKey);
+    Call<User> getRequestList(@Query("token") String token);
 
     @POST("authenticate")
     @FormUrlEncoded
     Call<User> login(@Field("email") String email,
                         @Field("password") String password);
+
+    @POST("register")
+    @FormUrlEncoded
+    Call<User> register(@Field("email") String email, @Field("password") String password,
+                        @Field("donorName") String donorName,@Field("gender") String gender,
+                        @Field("age") String age,@Field("mobile") String phone,
+                        @Field("blood_group") int b_id,@Field("state") int state_id,
+                        @Field("city") int city_id,@Field("district") int district_id);
+
+    @POST("requestCreate")
+        @FormUrlEncoded
+        Call<User> requestCreate(@Field("email") String email, @Field("hospital") String hospital,
+                            @Field("donorName") String donorName,@Field("gender") String gender,
+                            @Field("age") String age,@Field("mobile") String phone,
+                            @Field("blood_group") String blood_group);
+
+
 }

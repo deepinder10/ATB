@@ -19,6 +19,7 @@
         android:layout_marginBottom="8dp"
         android:visibility="gone" />
 
+
     <ScrollView
         android:id="@+id/login_form"
         android:layout_width="match_parent"
@@ -67,20 +68,19 @@
             </android.support.design.widget.TextInputLayout>
 
             <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/m_gender"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-                <RadioButton android:id="@+id/radio_pirates"
+                <RadioButton android:id="@+id/radio_male"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/radio_male"
-                    android:checked="true"
-                    android:onClick="onRadioButtonClicked"/>
-                <RadioButton android:id="@+id/radio_ninjas"
+                    android:checked="true" />
+                <RadioButton android:id="@+id/radio_female"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/radio_female"
-                    android:onClick="onRadioButtonClicked"/>
+                    android:text="@string/radio_female" />
             </RadioGroup>
 
             <android.support.design.widget.TextInputLayout

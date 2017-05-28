@@ -3,7 +3,9 @@ package com.deepindersingh.atb;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Movie;
 import android.support.annotation.NonNull;
@@ -73,6 +75,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private SharedPreferences sharedpreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,6 +159,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
+
         if (mAuthTask != null) {
             return;
         }
@@ -323,7 +327,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         protected Void doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
-            showProgress(true);
             try {
                 ApiInterface apiService =
                         ApiClient.getClient().create(ApiInterface.class);
@@ -338,6 +341,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         if(response.body().getFlag() == 143){
                             Toast.makeText(LoginActivity.this,response.body().getMessage(),Toast.LENGTH_LONG).show();
                             startActivity(new Intent(LoginActivity.this,MainActivity.class));
+                            sharedpreferences = getSharedPreferences("authentication", Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedpreferences.edit();
+                            editor.putString("token", response.body().getToken());
+                            editor.apply();
                         }else{
                             Toast.makeText(LoginActivity.this,response.body().getMessage(),Toast.LENGTH_LONG).show();
                             mEmailView.setError("Wrong Details");

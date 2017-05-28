@@ -3,22 +3,15 @@ package com.deepindersingh.atb;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
-
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -27,11 +20,22 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.deepindersingh.atb.model.User;
+import com.deepindersingh.atb.rest.ApiClient;
+import com.deepindersingh.atb.rest.ApiInterface;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -48,18 +52,26 @@ public class RegisterActivity extends AppCompatActivity  {
     private View mProgressView;
     private View mLoginFormView;
     private EditText mDonorName;
+    private EditText mDonorAge;
+    private EditText mDonorPhone;
     private Spinner blood_spinner;
     private Spinner states_spinner;
+    private RadioGroup mGender;
+    private RadioButton radioButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-        // Set up the login form.
+
         mEmailView = (EditText) findViewById(R.id.donorEmail);
         mPasswordView = (EditText) findViewById(R.id.donorPassword);
         blood_spinner = (Spinner) findViewById(R.id.blood_group_spinner);
         states_spinner = (Spinner) findViewById(R.id.state_spinner);
+        mDonorName = (EditText) findViewById(R.id.donorName);
+        mDonorAge = (EditText) findViewById(R.id.donorAge);
+        mDonorPhone = (EditText) findViewById(R.id.donorPhone);
+        mGender = (RadioGroup) findViewById(R.id.m_gender);
 
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
@@ -103,6 +115,19 @@ public class RegisterActivity extends AppCompatActivity  {
 
         // Store values at the time of the login attempt.
         String password = mPasswordView.getText().toString();
+        String email = mEmailView.getText().toString();
+        String donorName = mDonorName.getText().toString();
+        String phoneNumber = mDonorPhone.getText().toString();
+        String donorAge = mDonorAge.getText().toString();
+        String blood_group = blood_spinner.getSelectedItem().toString();
+        String state = states_spinner.getSelectedItem().toString();
+
+
+        int selectedId = mGender.getCheckedRadioButtonId();
+
+        radioButton = (RadioButton) findViewById(selectedId);
+
+        String gender = radioButton.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
@@ -114,37 +139,114 @@ public class RegisterActivity extends AppCompatActivity  {
             cancel = true;
         }
 
+        if(TextUtils.isEmpty(donorAge)){
+            mDonorAge.setError(getString(R.string.error_field_required));
+            focusView = mDonorAge;
+            cancel = true;
+        }
+
+        if(TextUtils.isEmpty(donorName)){
+            mDonorName.setError(getString(R.string.error_field_required));
+            focusView = mDonorName;
+            cancel = true;
+        }
         // Check for a valid email address.
-//        if (TextUtils.isEmpty(email)) {
-//            mEmailView.setError(getString(R.string.error_field_required));
-//            focusView = mEmailView;
-//            cancel = true;
-//        } else if (!isEmailValid(email)) {
-//            mEmailView.setError(getString(R.string.error_invalid_email));
-//            focusView = mEmailView;
-//            cancel = true;
-//        }
+        if (TextUtils.isEmpty(email)) {
+            mEmailView.setError(getString(R.string.error_field_required));
+            focusView = mEmailView;
+            cancel = true;
+        } else if (!isEmailValid(email)) {
+            mEmailView.setError(getString(R.string.error_invalid_email));
+            focusView = mEmailView;
+            cancel = true;
+        }
+
+        if(TextUtils.isEmpty(phoneNumber)){
+            mDonorPhone.setError(getString(R.string.error_invalid_email));
+            focusView = mDonorPhone;
+            cancel = true;
+        }
 
         if (cancel) {
             // There was an error; don't attempt login and focus the first
             // form field with an error.
             focusView.requestFocus();
         } else {
+            int b_id = 13;
+            int state_id=9;
+            int city_id=4;
+            int district_id=1;
+            switch (blood_group){
+                case "O+":
+                    b_id = 13;
+                    break;
+                case "O-":
+                    b_id = 14;
+                    break;
+                case "AB+":
+                    b_id = 15;
+                    break;
+                case "AB-":
+                    b_id = 16;
+                    break;
+                case "A+":
+                    b_id = 17;
+                    break;
+                case "A-":
+                    b_id = 18;
+                    break;
+                case "B+":
+                    b_id = 19;
+                    break;
+                case "B-":
+                    b_id = 20;
+                    break;
+            }
+            switch (state){
+                case "Punjab":
+                    state_id = 9;
+                    city_id = 4;
+                    district_id = 1;
+                    break;
+                case "Harayana":
+                    state_id = 10;
+                    city_id = 11;
+                    district_id = 23;
+                    break;
+                case "Himachal Pradesh":
+                    state_id = 11;
+                    city_id = 4;
+                    district_id = 1;
+                    break;
+                case "Delhi":
+                    state_id = 13;
+                    city_id = 4;
+                    district_id = 1;
+                    break;
+                case "Jammu and Kashmir":
+                    state_id = 12;
+                    city_id = 4;
+                    district_id = 1;
+                    break;
+                case "Rajasthan":
+                    state_id = 14;
+                    city_id = 4;
+                    district_id = 1;
+                    break;
+            }
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            //mAuthTask = new UserLoginTask(email, password);
+            mAuthTask = new UserLoginTask(email, password,donorName,donorAge,phoneNumber,gender,b_id,state_id,city_id,district_id);
             mAuthTask.execute((Void) null);
         }
     }
 
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
         return email.contains("@");
     }
 
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
         return password.length() > 4;
     }
 
@@ -202,10 +304,28 @@ public class RegisterActivity extends AppCompatActivity  {
 
         private final String mEmail;
         private final String mPassword;
+        private final String mDonorName;
+        private final String mDonorAge;
+        private final String mPhone;
+        private final String mGender;
+        private final int b_id;
+        private final int state_id;
+        private final int city_id;
+        private final int district_id;
 
-        UserLoginTask(String email, String password) {
+
+        UserLoginTask(String email, String password,String donorName,String donorAge,String phoneNumber,String gender,int blood,int state,int city,int district) {
             mEmail = email;
             mPassword = password;
+            mDonorName = donorName;
+            mDonorAge = donorAge;
+            mPhone = phoneNumber;
+            mGender = gender;
+            b_id = blood;
+            city_id = city;
+            state_id = state;
+            district_id = district;
+
         }
 
         @Override
@@ -213,28 +333,40 @@ public class RegisterActivity extends AppCompatActivity  {
             // TODO: attempt authentication against a network service.
 
             try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
+                ApiInterface apiService =
+                        ApiClient.getClient().create(ApiInterface.class);
+
+                Call<User> call = apiService.register(mEmail,mPassword,mDonorName,mGender,
+                        mDonorAge,mPhone,b_id,state_id,city_id,district_id);
+                call.enqueue(new Callback<User>() {
+                    @Override
+                    public void onResponse(Call<User>call, Response<User> response) {
+                        showProgress(false);
+
+                        Log.d("success", "" + response.body().getError());
+                        if(response.body().getFlag() == 143){
+                            Toast.makeText(RegisterActivity.this,response.body().getMessage(),Toast.LENGTH_LONG).show();
+                            startActivity(new Intent(RegisterActivity.this,LoginActivity.class));
+                        }else{
+                            Toast.makeText(RegisterActivity.this,response.body().getMessage(),Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<User>call, Throwable t) {
+                        // Log error here since request failed
+                        Log.e("error", t.toString());
+                    }
+                });
+                mAuthTask = null;
+
+
+            } catch (Exception e) {
+                Log.e("error", e.toString());
+
             }
+            return null;
 
-
-            // TODO: register the new account here.
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (success) {
-                finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
         }
 
         @Override
